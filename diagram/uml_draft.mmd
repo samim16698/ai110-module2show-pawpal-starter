@@ -1,0 +1,46 @@
+classDiagram
+    class User {
+        +String name
+        +String email
+        +String phoneNumber
+        +String preferences
+        +updateProfile()
+        +addTask()
+        +editTask()
+    }
+
+    class Pet {
+        +String name
+        +String species
+        +String breed
+        +int age
+        +User owner
+        +displayInfo()
+        +updateInfo()
+    }
+
+    class Task {
+        +String taskName
+        +String taskType
+        +int duration
+        +String priority
+        +Boolean completedStatus
+        +createTask()
+        +editTask()
+        +deleteTask()
+        +markComplete()
+    }
+
+    class Planner {
+        +List~Task~ taskList
+        +int availableTime
+        +List~Task~ dailyPlan
+        +generateDailyPlan()
+        +sortTasks()
+        +filterTasks()
+        +displayPlan()
+    }
+
+    User "1" --> "0..*" Pet : has
+    Pet "1" --> "0..*" Task : has
+    Planner "1" --> "0..*" Task : organizes
