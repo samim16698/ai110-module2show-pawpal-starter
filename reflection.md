@@ -12,12 +12,20 @@ Three core actions that a user should be able to perform are:
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+Answer: MY UML design includes four classes such as: user, pet, task and planner. The user represents the pet owner and basic information like name, email, phone number and user preferences. The pet class represents each pet being booked and stores information such as name, breed, age and owner. The task class represents activities such as feeding, walking or grooming and tracks duration and priority of these tasks. While the planner class deals with organizing tasks, sorting and generating a daily plan for the user. 
+
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
----
+--- Updated the skeleton in pawpal_system.py to reflect the UML relationships more clearly:
+
+- Added a pets collection to User for the “User has Pets” relationship.
+- Added a tasks collection to Pet for the “Pet has Tasks” relationship.
+- Made Planner’s task-related fields more flexible with default empty 
+
+This keeps the file as a class skeleton while making the relationships explicit.
 
 ## 2. Scheduling Logic and Tradeoffs
 

@@ -8,14 +8,15 @@ class User:
         self.email = email
         self.phoneNumber = phoneNumber
         self.preferences = preferences
+        self.pets: List["Pet"] = []
 
     def updateProfile(self):
         pass
 
-    def addTask(self):
+    def addTask(self, task: "Task", pet: Optional["Pet"] = None):
         pass
 
-    def editTask(self):
+    def editTask(self, task: "Task"):
         pass
 
 
@@ -26,6 +27,7 @@ class Pet:
     breed: str
     age: int
     owner: Optional[User] = None
+    tasks: List["Task"] = field(default_factory=list)
 
     def displayInfo(self):
         pass
@@ -56,10 +58,10 @@ class Task:
 
 
 class Planner:
-    def __init__(self, taskList: List[Task], availableTime: int, dailyPlan: List[Task]):
-        self.taskList = taskList
+    def __init__(self, taskList: Optional[List[Task]] = None, availableTime: int = 0, dailyPlan: Optional[List[Task]] = None):
+        self.taskList: List[Task] = taskList or []
         self.availableTime = availableTime
-        self.dailyPlan = dailyPlan
+        self.dailyPlan: List[Task] = dailyPlan or []
 
     def generateDailyPlan(self):
         pass
