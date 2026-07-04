@@ -1,4 +1,5 @@
 import streamlit as st
+from pawpal_system import Owner, Pet, Scheduler, Task
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -49,6 +50,15 @@ st.caption("Add a few tasks. In your final version, these should feed into your 
 if "tasks" not in st.session_state:
     st.session_state.tasks = []
 
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(name=owner_name, email="", phoneNumber="", preferences="")
+
+if "pet" not in st.session_state:
+    st.session_state.pet = Pet(name=pet_name, species=species, breed="Unknown", age=0)
+
+if "scheduler" not in st.session_state:
+    st.session_state.scheduler = Scheduler()
+
 col1, col2, col3 = st.columns(3)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
@@ -58,6 +68,20 @@ with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
 if st.button("Add task"):
+    st.session_state.owner.updateProfile(name=owner_name)
+
+    pet = next((existing_pet for existing_pet in st.session_state.owner.pets if existing_pet.name == pet_name), None)
+    if pet is None:
+        pet = Pet(name=pet_name, species=species, breed="Unknown", age=0)
+        st.session_state.owner.add_pet(pet)
+    else:
+        pet.updateInfo(name=pet_name, species=species)
+
+    pet.add_task(
+        description=task_title,
+        time=f"{int(duration)} min",
+        frequency=priority,
+    )
     st.session_state.tasks.append(
         {"title": task_title, "duration_minutes": int(duration), "priority": priority}
     )
@@ -74,9 +98,22 @@ st.subheader("Build Schedule")
 st.caption("This button should call your scheduling logic once you implement it.")
 
 if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
+    st.session_state.owner.updateProfile(name=owner_name)
+
+    pet = next((existing_pet for existing_pet in st.session_state.owner.pets if existing_pet.name == pet_name), None)
+    if pet is None:
+        pet = Pet(name=pet_name, species=species, breed="Unknown", age=0)
+        st.session_state.owner.add_pet(pet)
+    else:
+        pet.updateInfo(name=pet_name, species=species)
+
+    schedule = st.session_state.scheduler.generate_schedule(st.session_state.owner)
+    if schedule:
+        st.success("Schedule generated:")
+        for task in schedule:
+            st.write(f"- {task.description} at {task.time} ({task.frequency})")
+    else:
+        st.info("No tasks available yet.")
     st.markdown(
         """
 Suggested approach:
