@@ -67,11 +67,12 @@ pytest --cov
 
 Sample test output:
 
+```text
+7 passed in 0.47s
 ```
-# Paste your pytest output here
-```
+### Confidence Level
 
-## 📐 Smarter Scheduling
+***** (3/5)
 
 The scheduler now supports a few lightweight but useful planning features.
 

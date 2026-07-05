@@ -52,6 +52,17 @@ def test_scheduler_can_generate_schedule_from_owner():
     assert [task.description for task in schedule] == ["Feed", "Walk"]
 
 
+def test_scheduler_sort_by_time_orders_tasks_chronologically():
+    scheduler = Scheduler()
+    first = Task(description="Late task", time="18:00", frequency="Daily")
+    second = Task(description="Early task", time="08:00", frequency="Daily")
+    third = Task(description="Mid task", time="12:00", frequency="Daily")
+
+    sorted_tasks = scheduler.sort_by_time([first, second, third])
+
+    assert [task.description for task in sorted_tasks] == ["Early task", "Mid task", "Late task"]
+
+
 def test_recurring_daily_task_creates_next_occurrence_when_completed():
     pet = Pet(name="Bella", species="Dog", breed="Labrador", age=3)
     task = pet.add_task(description="Feed", time="08:00", frequency="Daily")
