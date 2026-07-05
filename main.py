@@ -8,16 +8,21 @@ dog = Pet("Luna", "Dog", "Golden Retriever", 5)
 owner.add_pet(cat)
 owner.add_pet(dog)
 
-cat.add_task("Feed breakfast", "8:00 AM", "Daily")
-dog.add_task("Morning walk", "9:00 AM", "Daily")
-cat.add_task("Give medication", "7:00 PM", "Daily")
+cat.add_task("Feed Milo", "18:00", "Daily")
+dog.add_task("Walk Luna", "08:00", "Daily")
+cat.add_task("Play with Milo", "12:00", "Daily")
+dog.add_task("Bath Luna", "16:00", "Daily")
 
 scheduler = Scheduler()
-schedule = scheduler.generate_schedule(owner)
-sorted_schedule = scheduler.sortTasks(schedule)
+all_tasks = owner.get_all_tasks()
 
-print("Today's Schedule")
-print("----------------")
+sorted_tasks = scheduler.sort_by_time(all_tasks)
+filtered_tasks = scheduler.filter_by(sorted_tasks, completed=False)
 
-for task in sorted_schedule:
-    print(f"{task.time} - {task.description} ({task.frequency})")
+print("Sorted tasks:")
+for task in sorted_tasks:
+    print(f"- {task.description} at {task.time}")
+
+print("\nFiltered tasks:")
+for task in filtered_tasks:
+    print(f"- {task.description} at {task.time}")

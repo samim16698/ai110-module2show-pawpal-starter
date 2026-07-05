@@ -50,3 +50,31 @@ def test_scheduler_can_generate_schedule_from_owner():
     schedule = scheduler.generate_schedule(owner)
 
     assert [task.description for task in schedule] == ["Feed", "Walk"]
+
+
+def test_recurring_daily_task_creates_next_occurrence_when_completed():
+    pet = Pet(name="Bella", species="Dog", breed="Labrador", age=3)
+    task = pet.add_task(description="Feed", time="08:00", frequency="Daily")
+
+    task.mark_complete()
+
+    assert task.completed is True
+    assert len(pet.tasks) == 2
+    assert pet.tasks[1].completed is False
+    assert pet.tasks[1].frequency == "Daily"
+    assert pet.tasks[1].due_date > task.due_date
+
+
+def test_scheduler_warns_about_conflicting_tasks(capsys):
+    owner = Owner(name="Mina", email="mina@example.com", phoneNumber="123", preferences="quiet")
+    pet = Pet(name="Bella", species="Dog", breed="Labrador", age=3)
+    owner.add_pet(pet)
+    pet.add_task(description="Feed", time="08:00", frequency="Daily")
+    pet.add_task(description="Walk", time="08:00", frequency="Daily")
+
+    scheduler = Scheduler()
+    schedule = scheduler.generate_schedule(owner)
+
+    captured = capsys.readouterr()
+    assert len(schedule) == 2
+    assert "Warning: conflicting tasks" in captured.out

@@ -39,6 +39,8 @@ This keeps the file as a class skeleton while making the relationships explicit.
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+One tradeoff in my scheduler is that it currently detects conflicts only when two tasks are scheduled for the exact same time, rather than checking whether their full time ranges overlap. This is a simpler approach because the project only stores a single time string for each task, not a start and end time, so the scheduler does not yet have enough information to reason about durations. This is still a reasonable tradeoff for this project because it gives users a lightweight warning for obvious scheduling conflicts without making the code more complex than necessary. It keeps the feature useful and easy to understand while leaving room to add more detailed overlap detection later if the app grows.
+
 ---
 
 ## 3. AI Collaboration

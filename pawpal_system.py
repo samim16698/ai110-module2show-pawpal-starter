@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 
@@ -81,6 +82,7 @@ class Pet:
     def add_task(self, description: str, time: str, frequency: str, completed: bool = False) -> "Task":
         """Create and attach a new task to the pet."""
         task = Task(description=description, time=time, frequency=frequency, completed=completed)
+        task.pet = self
         self.tasks.append(task)
         return task
 
@@ -107,6 +109,26 @@ class Task:
     time: str
     frequency: str
     completed: bool = False
+    due_date: Optional[datetime] = None
+    pet: Optional["Pet"] = None
+
+    def __post_init__(self):
+        """Set an initial due date when one is not provided."""
+        if self.due_date is None:
+            self.due_date = self._get_initial_due_date()
+
+    def _get_initial_due_date(self) -> datetime:
+        """Create an initial due date from the task's time string."""
+        current_date = datetime.now().date()
+        hour, minute = map(int, self.time.split(":", 1))
+        return datetime.combine(current_date, datetime.min.time()).replace(hour=hour, minute=minute)
+
+    def _get_next_due_date(self) -> datetime:
+        """Return the next due date for a recurring task based on its frequency."""
+        if self.due_date is None:
+            return self._get_initial_due_date()
+        interval = timedelta(days=1) if self.frequency.lower() == "daily" else timedelta(days=7)
+        return self.due_date + interval
 
     def createTask(self):
         """Return the task instance."""
@@ -127,8 +149,18 @@ class Task:
         return None
 
     def mark_complete(self):
-        """Mark the task as completed."""
+        """Mark the task complete and create the next recurring occurrence when applicable."""
+        if self.completed:
+            return
         self.completed = True
+        if self.frequency.lower() in {"daily", "weekly"} and self.pet is not None:
+            next_task = self.pet.add_task(
+                description=self.description,
+                time=self.time,
+                frequency=self.frequency,
+                completed=False,
+            )
+            next_task.due_date = self._get_next_due_date()
 
     def markComplete(self):
         """Alias for marking the task complete."""
@@ -153,11 +185,17 @@ class Scheduler:
         tasks = owner.get_all_tasks()
         self.taskList = tasks
         self.dailyPlan = tasks
+        self.detect_conflicts(tasks)
         return self.dailyPlan
 
     def generateDailyPlan(self, owner: Optional[Owner] = None) -> List[Task]:
         """Return a daily plan using the owner's tasks."""
         return self.generate_schedule(owner)
+
+    def sort_by_time(self, tasks: Optional[List[Task]] = None) -> List[Task]:
+        """Return a new list of tasks sorted by their scheduled time value."""
+        task_list = tasks if tasks is not None else self.dailyPlan
+        return sorted(task_list, key=lambda task: task.time)
 
     def sortTasks(self, tasks: Optional[List[Task]] = None) -> List[Task]:
         """Sort tasks by time, defaulting to the daily plan."""
@@ -168,6 +206,52 @@ class Scheduler:
         """Filter tasks by completion status, defaulting to the daily plan."""
         task_list = tasks if tasks is not None else self.dailyPlan
         return [task for task in task_list if task.completed is completed]
+
+    def filter_by(self, tasks: Optional[List[Task]] = None, completed: Optional[bool] = None,
+                  pet_name: Optional[str] = None) -> List[Task]:
+        """Return tasks that match the optional completion and pet-name filters."""
+        task_list = tasks if tasks is not None else self.dailyPlan
+        filtered_tasks: List[Task] = []
+        for task in task_list:
+            matches_completion = completed is None or task.completed is completed
+            pet_match = True
+            if pet_name not in (None, ""):
+                pet_attr = getattr(task, "pet", None)
+                pet_name_attr = getattr(task, "pet_name", None)
+                pet_match = False
+                if pet_attr is not None:
+                    pet_match = getattr(pet_attr, "name", None) == pet_name
+                elif pet_name_attr is not None:
+                    pet_match = pet_name_attr == pet_name
+            if matches_completion and pet_match:
+                filtered_tasks.append(task)
+        return filtered_tasks
+
+    def detect_conflicts(self, tasks: Optional[List[Task]] = None) -> List[tuple[Task, Task]]:
+        """Scan tasks for identical scheduled times and print a warning for each conflict."""
+        task_list = tasks if tasks is not None else self.dailyPlan
+        seen_times = {}
+        conflicts: List[tuple[Task, Task]] = []
+
+        for task in task_list:
+            try:
+                time_key = self._parse_time(task.time)
+            except ValueError:
+                continue
+
+            if time_key in seen_times:
+                first_task = seen_times[time_key]
+                conflicts.append((first_task, task))
+                print(f"Warning: conflicting tasks at {task.time}: {first_task.description} and {task.description}")
+            else:
+                seen_times[time_key] = task
+
+        return conflicts
+
+    def _parse_time(self, time_value: str) -> int:
+        """Convert a HH:MM time string into minutes for simple conflict checks."""
+        hour, minute = map(int, time_value.split(":", 1))
+        return hour * 60 + minute
 
     def displayPlan(self) -> List[Task]:
         """Return the current daily plan."""
