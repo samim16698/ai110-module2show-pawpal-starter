@@ -63,7 +63,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
 with col2:
-    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
+    task_time = st.text_input("Task time (HH:MM)", value="08:00")
 with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
@@ -79,11 +79,11 @@ if st.button("Add task"):
 
     pet.add_task(
         description=task_title,
-        time=f"{int(duration)} min",
+        time=task_time,
         frequency=priority,
     )
     st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
+        {"title": task_title, "time": task_time, "priority": priority}
     )
 
 if st.session_state.tasks:
@@ -108,12 +108,18 @@ if st.button("Generate schedule"):
         pet.updateInfo(name=pet_name, species=species)
 
     schedule = st.session_state.scheduler.generate_schedule(st.session_state.owner)
-    if schedule:
-        st.success("Schedule generated:")
-        for task in schedule:
+    sorted_schedule = st.session_state.scheduler.sort_by_time(schedule)
+    conflicts = st.session_state.scheduler.detect_conflicts(sorted_schedule)
+
+    if sorted_schedule:
+        st.success("Sorted schedule:")
+        for task in sorted_schedule:
             st.write(f"- {task.description} at {task.time} ({task.frequency})")
     else:
         st.info("No tasks available yet.")
+
+    if conflicts:
+        st.warning("Some tasks overlap at the same time. Please review the schedule.")
     st.markdown(
         """
 Suggested approach:

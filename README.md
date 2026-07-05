@@ -87,10 +87,9 @@ The scheduler now supports a few lightweight but useful planning features.
 
 Describe your app in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+Enter the owner and pet information.
+Add one or more pet care tasks with a scheduled time and priority.
+Generate a schedule to organize the tasks.
+Review the schedule and any conflict warnings.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
